@@ -1,0 +1,12 @@
+
+venv/
+
+templates/__pycache__/
+
+templates/settings.json
+
+lightning_logs/
+
+Artists.egg-info/
+
+.idea/

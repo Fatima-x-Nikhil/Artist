@@ -5,39 +5,32 @@ from typing import Union, List
 import torch
 import torchvision
 import torchvision.transforms as transforms
+from torchvision.utils import make_grid
 from pytorch_lightning import LightningModule
 from torch.nn.functional import binary_cross_entropy as bce
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import random_split
 from torchvision.datasets import ImageFolder
 
-from templates.student import Student
-from templates.tutor import Tutor
-
-
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0)
+from src.students.student import Student
+from src.tutors.tutor import Tutor
+from typing import Tuple
 
 
 class ArtSchool(LightningModule):
     def __init__(self, student: Student, tutor: Tutor, lr: float = 0.002, b1: float = 0.5, b2: float = 0.999,
-                 batch_size: int = 64, dirpath: str = "", train_nontrain_ratio: float = 0.8, val_test_ratio: float = 0.5):
+                 batch_size: int = 64, dirpath: str = "", train_nontrain_ratio: float = 0.8, val_test_ratio: float = 0.5,
+                 img_shape: Tuple[int, int, int] = (3, 64, 64)
+                 ):
         super().__init__()
 
         self.student, self.tutor = student.to(self.device), tutor.to(self.device)
-        self.student.apply(weights_init)
-        self.tutor.apply(weights_init)
         self.latent_dim, self.img_shape, self.art_type = student.latent_dim, student.img_shape, student.art_type
         self.testing_seed = torch.randn(8, self.latent_dim, 1, 1, device=self.device)
         self.batch_size, self.lr, self.b1, self.b2 = batch_size, lr, b1, b2
 
         # Creating DataLoaders
-        self.dirpath = json.load(open("templates/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
+        self.dirpath = json.load(open("src/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
         self.dirpath = os.path.join(self.dirpath, self.art_type.replace(" ", "_"))
         dataset = ImageFolder(
             root=self.dirpath,
@@ -64,7 +57,7 @@ class ArtSchool(LightningModule):
         if optimizer_idx == 0:
             student_artwork = self.student(seed)
             # log sampled images
-            self.logger.experiment.add_image('generated_images', torchvision.utils.make_grid(student_artwork[:6]), 0)
+            self.logger.experiment.add_image('generated_images', make_grid(student_artwork[:6]), 0)
             student_loss = bce(
                 self.tutor(student_artwork).view(-1),
                 torch.ones(images.size(0), 1).to(self.device).view(-1)
@@ -92,7 +85,7 @@ class ArtSchool(LightningModule):
         return [opt_g, opt_d], []
 
     def on_epoch_end(self):
-        grid = torchvision.utils.make_grid(self.student(self.testing_seed.type_as(self.student.main[0].weight)))
+        grid = make_grid(self.student(self.testing_seed.type_as(self.student.main[0].weight)))
         self.logger.experiment.add_image("{}'s artwork".format(self.student.name), grid, self.current_epoch)
 
     # --------------------------------------------------[DATALOADERS]---------------------------------------------------

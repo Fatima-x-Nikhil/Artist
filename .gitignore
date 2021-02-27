@@ -1,12 +1,8 @@
 
 venv/
-
-templates/__pycache__/
-
-templates/settings.json
-
+src/__pycache__/
+src/settings.json
 lightning_logs/
-
 Artists.egg-info/
-
 .idea/
+test

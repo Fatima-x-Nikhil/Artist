@@ -11,33 +11,24 @@ from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import random_split
 from torchvision.datasets import ImageFolder
 
-from templates.student import Student
-from templates.tutor import Tutor
-
-
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
-        torch.nn.init.constant_(m.bias.data, 0)
+from src.students.student import Student
+from src.tutors.tutor import Tutor
+from src.spare_functions import weights_init
 
 
 class ArtSchool(LightningModule):
     def __init__(self, student: Student, tutor: Tutor, lr: float = 0.002, b1: float = 0.5, b2: float = 0.999,
-                 batch_size: int = 64, dirpath: str = "", train_nontrain_ratio: float = 0.8, val_test_ratio: float = 0.5):
+                 batch_size: int = 64, dirpath: str = "", train_nontrain_ratio: float = 0.8, val_test_ratio: float = 0.5
+                 ):
         super().__init__()
 
         self.student, self.tutor = student.to(self.device), tutor.to(self.device)
-        self.student.apply(weights_init)
-        self.tutor.apply(weights_init)
         self.latent_dim, self.img_shape, self.art_type = student.latent_dim, student.img_shape, student.art_type
         self.testing_seed = torch.randn(8, self.latent_dim, 1, 1, device=self.device)
         self.batch_size, self.lr, self.b1, self.b2 = batch_size, lr, b1, b2
 
         # Creating DataLoaders
-        self.dirpath = json.load(open("templates/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
+        self.dirpath = json.load(open("src/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
         self.dirpath = os.path.join(self.dirpath, self.art_type.replace(" ", "_"))
         dataset = ImageFolder(
             root=self.dirpath,

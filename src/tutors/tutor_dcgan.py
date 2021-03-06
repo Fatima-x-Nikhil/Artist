@@ -44,7 +44,6 @@ class TutorDCGAN(Tutor):
             )
             yield nn.Sigmoid()
         self.main = nn.Sequential(*[x for x in create_layers(layers)])
-        print(self.main)
 
     def forward(self, _input):
         return self.main(_input)

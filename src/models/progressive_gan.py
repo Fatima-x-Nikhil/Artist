@@ -1,6 +1,8 @@
 """
 Code mostly from https://github.com/rosinality/progressive-gan-pytorch
 Vast majority of credit goes to github user rosinality for this right here, I don't want to just copy + paste and steal
+
+https://i.kym-cdn.com/entries/icons/original/000/028/306/Screen_Shot_2019-01-24_at_3.23.42_PM.jpg
 Professionals have standards
 I'm going to copy + paste + credit the person I got this from
 ¯\_(ツ)_/¯

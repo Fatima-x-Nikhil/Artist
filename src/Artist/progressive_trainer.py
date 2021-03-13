@@ -5,7 +5,7 @@ from typing import Union
 import numpy as np
 import torch
 from pytorch_lightning import LightningModule
-from src.Artist.models.progressive_gan import Generator, Discriminator
+from Artist.models.progressive_gan import Generator, Discriminator
 from torch import Tensor
 from torch.autograd import grad
 from torch.optim import Optimizer
@@ -15,7 +15,7 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchvision.utils import make_grid
 
-from src.Artist.dataset import unsplash_downloader
+from Artist.dataset import unsplash_downloader
 
 
 class CustomDataset(Dataset):

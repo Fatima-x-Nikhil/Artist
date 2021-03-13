@@ -15,13 +15,14 @@ Ensure you have a GPU if you want to train in any reasonable amount of time.
 git clone https://github.com/Fatima-x-Nikhil/Artist.git
 cd Artist
 pip install -r requirements.txt
+# Don't forget to install your specific pytorch and torchvision libraries for your gpu
 pip install --no-cache-dir --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu112/torch_nightly.html
 cd src/models
 pip install -e .
 ```
 
 ## Running the program
-To train the program, run the "Train.ipynb" notebook and alter your parameters at will.
+To train the program, run the "Train.ipynb" notebook and alter your parameters at will on GitHub.
 There should be sufficient in-code documentation for you to understand what the hell is going on
 
    [CUDA Install]: <https://developer.nvidia.com/cuda-downloads>

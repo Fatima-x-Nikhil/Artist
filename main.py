@@ -9,7 +9,7 @@ from src.progressive_trainer import ProgressiveGAN
 
 def progressive_gan(name: str = "celeba", art_type: str = "celeba", n: int = 100000) -> LightningModule:
     gan = ProgressiveGAN(
-        iterations=[10000 * n for n in range(0, 6, 1)],
+        iterations=[10000 * n for n in range(1, 7, 1)],
         name=name,
         art_type=art_type,
         n=n,
@@ -28,9 +28,7 @@ def dcgan(name: str = "celeba", art_type: str = "celeba", n: int = 100000) -> Li
 
 
 def main():
-    name = "celeba"
-    art_type = "celeba"
-    n = 1000
+    gan = progressive_gan("celeba", "celeba", 10000)
 
     trainer = Trainer(
         auto_select_gpus=True,
@@ -38,7 +36,7 @@ def main():
         gpus=1,
         callbacks=[ModelCheckpoint(filepath="checkpoints/latest/", save_last=True)]
     )
-    trainer.fit(progressive_gan(name, art_type, n))
+    trainer.fit(gan)
 
 
 if __name__ == '__main__':

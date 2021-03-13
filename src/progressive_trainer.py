@@ -1,6 +1,4 @@
 import json
-import os
-from pathlib import Path
 from typing import List
 from typing import Union
 
@@ -17,7 +15,7 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchvision.utils import make_grid
 
-from src.dataset import UnsplashDownloader
+from src.dataset import unsplash_downloader
 
 
 class CustomDataset(Dataset):
@@ -29,7 +27,7 @@ class CustomDataset(Dataset):
         if batch_sizes is None:
             batch_sizes = [8] * 6
 
-        self.path = self.__unsplash_downloader__(path, art_type, n)
+        self.path = unsplash_downloader(art_type, path, n)
         self.iterations = iterations
         self.batch_sizes = batch_sizes
         self.iteration = 0
@@ -39,19 +37,6 @@ class CustomDataset(Dataset):
         self.__generate_dataset__()
 
         super().__init__()
-
-    @staticmethod
-    def __unsplash_downloader__(dirpath, art_type, n):
-        dirpath = json.load(open("src/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
-        dirpath = os.path.join(dirpath, art_type.replace(" ", "_"))
-        Path(dirpath).mkdir(parents=True, exist_ok=True)
-        if len(os.listdir(dirpath)) == 0:
-            query = art_type.replace("_", " ")
-            print("The art type of {} was not found, downloading a sample of {} images from UnSplash".format(query, n))
-            unsplash_downloader = UnsplashDownloader()
-            unsplash_downloader.get_image_urls(query=query, number_of_urls=n)
-            unsplash_downloader.download_urls(path=dirpath)
-        return dirpath
 
     def __generate_dataset__(self):
         size = 2 ** (self.step + 2)

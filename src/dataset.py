@@ -43,3 +43,16 @@ class UnsplashDownloader:
             urls = self.urls[query]
             for index, url in enumerate(tqdm(urls, desc="downloading images for {}".format(query))):
                 Image.open(requests.get(url, stream=True).raw).save(os.path.join(dir_path, str(index) + ".jpg"))
+
+
+def unsplash_downloader(art_type, dirpath, n):
+    dirpath = json.load(open("src/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
+    dirpath = os.path.join(dirpath, art_type.replace(" ", "_"))
+    Path(dirpath).mkdir(parents=True, exist_ok=True)
+    if len(os.listdir(dirpath)) == 0:
+        query = art_type.replace("_", " ")
+        print("The art type of {} was not found, downloading a sample of {} images from UnSplash".format(query, n))
+        downloader = UnsplashDownloader()
+        downloader.get_image_urls(query=query, number_of_urls=n)
+        downloader.download_urls(path=dirpath)
+    return dirpath

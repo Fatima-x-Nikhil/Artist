@@ -1,14 +1,13 @@
+from pytorch_lightning import LightningModule
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
+from src.models import DCGAN
 
+from src.general_trainer import CustomModule
 from src.progressive_trainer import ProgressiveGAN
 
 
-def main():
-    name = "celeba"
-    art_type = "celeba"
-    n = 1000
-
+def progressive_gan(name: str = "celeba", art_type: str = "celeba", n: int = 100000) -> LightningModule:
     gan = ProgressiveGAN(
         iterations=[10000 * n for n in range(0, 6, 1)],
         name=name,
@@ -17,13 +16,29 @@ def main():
         batch_sizes=[2 ** n for n in range(6, 0, -1)],
         display_interval=50
     )
+    return gan
+
+
+def dcgan(name: str = "celeba", art_type: str = "celeba", n: int = 100000) -> LightningModule:
+    gan = CustomModule(
+        models=DCGAN(name, art_type, img_shape=(3, 64, 64)),
+        n=n
+    )
+    return gan
+
+
+def main():
+    name = "celeba"
+    art_type = "celeba"
+    n = 1000
+
     trainer = Trainer(
         auto_select_gpus=True,
         max_epochs=5,
         gpus=1,
         callbacks=[ModelCheckpoint(filepath="checkpoints/latest/", save_last=True)]
     )
-    trainer.fit(gan)
+    trainer.fit(progressive_gan(name, art_type, n))
 
 
 if __name__ == '__main__':

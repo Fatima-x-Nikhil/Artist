@@ -9,12 +9,12 @@ from tqdm.auto import tqdm
 
 
 class UnsplashDownloader:
-    def __init__(self):
-        json_file = json.load(open("/home/nmelgiri/PycharmProjects/Artist/src/settings.json"))
-        self.client_id = json_file["Unsplash"]["Access Key"]
+    def __init__(self, json_path: str = "", image_dir: str = ""):
+        self.json_file = json.load(open(json_path))
+        self.client_id = self.json_file["Unsplash"]["Access Key"]
         self.search_url = "https://api.unsplash.com/search/photos/"
         self.urls = {}
-        self.path = "/home/nmelgiri/PycharmProjects/images/unsplash"
+        self.path = image_dir
 
     def get_image_urls(self, query: str, number_of_urls: int, image_type: str = "small"):
         pages = math.ceil(number_of_urls / 30)
@@ -45,8 +45,8 @@ class UnsplashDownloader:
                 Image.open(requests.get(url, stream=True).raw).save(os.path.join(dir_path, str(index) + ".jpg"))
 
 
-def unsplash_downloader(art_type, dirpath, n):
-    dirpath = json.load(open("src/settings.json"))["filepaths"]["image dirpath"] if dirpath == "" else dirpath
+def unsplash_downloader(art_type, json_path, n):
+    dirpath = json.load(open(json_path))["filepaths"]["image dirpath"]
     dirpath = os.path.join(dirpath, art_type.replace(" ", "_"))
     Path(dirpath).mkdir(parents=True, exist_ok=True)
     if len(os.listdir(dirpath)) == 0:

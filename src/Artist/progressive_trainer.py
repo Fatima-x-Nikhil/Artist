@@ -1,4 +1,3 @@
-import json
 from os import cpu_count
 from typing import List
 from typing import Union
@@ -6,7 +5,7 @@ from typing import Union
 import numpy as np
 import torch
 from pytorch_lightning import LightningModule
-from src.models.progressive_gan import Generator, Discriminator
+from src.Artist.models.progressive_gan import Generator, Discriminator
 from torch import Tensor
 from torch.autograd import grad
 from torch.optim import Optimizer
@@ -16,19 +15,18 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchvision.utils import make_grid
 
-from src.dataset import unsplash_downloader
+from src.Artist.dataset import unsplash_downloader
 
 
 class CustomDataset(Dataset):
     def __init__(self, art_type: str = "celeba", n=1000, iterations: List[int] = None, batch_sizes: List[int] = None,
-                 step: int = 0):
-        path = json.load(open("/home/nmelgiri/PycharmProjects/Artist/src/settings.json"))["filepaths"]["image dirpath"]
+                 step: int = 0, json_path: str = ""):
         if iterations is None:
             iterations = [100000] * 6
         if batch_sizes is None:
             batch_sizes = [8] * 6
 
-        self.path = unsplash_downloader(art_type, path, n)
+        self.path = unsplash_downloader(art_type, json_path=json_path, n=n)
         self.iterations = iterations
         self.batch_sizes = batch_sizes
         self.iteration = 0
@@ -93,9 +91,9 @@ class CustomDataset(Dataset):
 
 
 class ProgressiveGAN(LightningModule):
-    def __init__(self, art_type: str = "celeba", name: str = "Fatima", batch_sizes: List[int] = None, n_label: int = 1,
-                 display_interval: int = 100, n: int = 1000, iterations: List[int] = None, display_length: int = 32,
-                 initial_step: int = 0):
+    def __init__(self, art_type: str = "celeba", name: str = "Fatima", json_path: str = "",
+                 batch_sizes: List[int] = None, n_label: int = 1, display_interval: int = 100, n: int = 1000,
+                 iterations: List[int] = None, display_length: int = 32, initial_step: int = 0, gpu: bool=False):
         super().__init__()
         iterations = [100000] * 6 if iterations is None else iterations
         batch_sizes = [8] * 6 if batch_sizes is None else batch_sizes
@@ -108,14 +106,17 @@ class ProgressiveGAN(LightningModule):
             art_type=art_type,
             n=n,
             iterations=iterations,
-            step=initial_step
+            step=initial_step,
+            json_path=json_path
         )
-
-        self.generator = Generator(self.code_size, n_label).cuda()
-        self.discriminator = Discriminator(n_label).cuda()
+        self.generator = Generator(self.code_size, n_label)
+        self.discriminator = Discriminator(n_label)
+        if gpu:
+            self.generator = self.generator.cuda()
+            self.discriminator = self.discriminator.cuda()
 
         self.testing_seed = torch.randn(display_length, self.code_size)
-        self.one, self.m_one = torch.tensor(1, dtype=torch.float).cuda(), torch.tensor(-1, dtype=torch.float).cuda()
+        self.one, self.m_one = torch.tensor(1, dtype=torch.float), torch.tensor(-1, dtype=torch.float)
 
     def __get_losses__(self, optimizer_idx: int, predictions: Union[List[torch.Tensor], torch.Tensor],
                        real_images: torch.Tensor, fake_images: torch.Tensor, step: int, alpha: float):
@@ -189,8 +190,8 @@ class ProgressiveGAN(LightningModule):
             loss.backward()
 
         if optimizer_idx == 1:
-            loss[0].backward(self.m_one, retain_graph=True)
-            loss[1].backward(self.one, retain_graph=True)
+            loss[0].backward(self.m_one.to(self.device), retain_graph=True)
+            loss[1].backward(self.one.to(self.device), retain_graph=True)
             loss[2].backward()
 
     def configure_optimizers(self):

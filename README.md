@@ -15,6 +15,7 @@ Ensure you have a GPU if you want to train in any reasonable amount of time.
 git clone https://github.com/Fatima-x-Nikhil/Artist.git
 cd Artist
 pip install -r requirements.txt
+pip install --no-cache-dir --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu112/torch_nightly.html
 cd src/models
 pip install -e .
 ```

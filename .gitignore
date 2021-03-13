@@ -1,10 +1,13 @@
 for_tima/playground.txt
 venv/
 src/__pycache__/
-src/settings.json
+settings.json
 lightning_logs/
 Artists.egg-info/
 .idea/
 test
 /for_tima
 checkpoints
+.ipynb_checkpoints
+dist
+build

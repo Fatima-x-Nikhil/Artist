@@ -1,18 +1,18 @@
 import torch
 import torchvision.transforms as transforms
 from pytorch_lightning import LightningModule
-from src.models.base import GAN
+from Artist.models.base import GAN
 from torch.nn.functional import binary_cross_entropy as bce
 from torch.utils.data.dataloader import DataLoader
 from torchvision.datasets import ImageFolder
 from torchvision.utils import make_grid
 
-from src.dataset import unsplash_downloader
+from Artist.dataset import unsplash_downloader
 
 
 class CustomModule(LightningModule):
     def __init__(self, models: GAN, lr: float = 0.002, b1: float = 0.5, b2: float = 0.999, batch_size: int = 64,
-                 dirpath: str = "", train_nontrain: float = 0.8, val_test: float = 0.5, n: int = 1000):
+                 json_path: str = "", n: int = 1000):
         super().__init__()
 
         artist, art_critic = models.generator, models.discriminator
@@ -22,7 +22,7 @@ class CustomModule(LightningModule):
         self.batch_size, self.lr, self.b1, self.b2 = batch_size, lr, b1, b2
 
         # Creating DataLoaders and Configuring Data
-        dirpath = unsplash_downloader(self.models.art_type, dirpath=dirpath, n=n)
+        dirpath = unsplash_downloader(self.models.art_type, json_path=json_path, n=n)
         self.dataset = ImageFolder(
             root=dirpath,
             transform=transforms.Compose([

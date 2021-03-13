@@ -1,4 +1,5 @@
 import json
+from os import cpu_count
 from typing import List
 from typing import Union
 
@@ -93,7 +94,8 @@ class CustomDataset(Dataset):
 
 class ProgressiveGAN(LightningModule):
     def __init__(self, art_type: str = "celeba", name: str = "Fatima", batch_sizes: List[int] = None, n_label: int = 1,
-                 display_interval: int = 100, n: int = 1000, iterations: List[int] = None, display_length: int = 32):
+                 display_interval: int = 100, n: int = 1000, iterations: List[int] = None, display_length: int = 32,
+                 initial_step: int = 0):
         super().__init__()
         iterations = [100000] * 6 if iterations is None else iterations
         batch_sizes = [8] * 6 if batch_sizes is None else batch_sizes
@@ -101,7 +103,13 @@ class ProgressiveGAN(LightningModule):
         self.name, self.art_type, self.code_size, self.index, self.display_length, self.display_interval = \
             name, art_type, 512 - n_label, 0, display_length, display_interval
 
-        self.dataset = CustomDataset(batch_sizes=batch_sizes, art_type=art_type, n=n, iterations=iterations)
+        self.dataset = CustomDataset(
+            batch_sizes=batch_sizes,
+            art_type=art_type,
+            n=n,
+            iterations=iterations,
+            step=initial_step
+        )
 
         self.generator = Generator(self.code_size, n_label).cuda()
         self.discriminator = Discriminator(n_label).cuda()
@@ -114,6 +122,12 @@ class ProgressiveGAN(LightningModule):
         if optimizer_idx == 0:
             discriminator_predictions = predictions
             generator_loss = -discriminator_predictions.mean()
+
+            # Logging
+            log = {"generator_loss": generator_loss}
+            self.logger.log_metrics(log, self.global_step)
+            self.log_dict(log, prog_bar=True)
+
             return generator_loss
 
         if optimizer_idx == 1:
@@ -128,9 +142,15 @@ class ProgressiveGAN(LightningModule):
             x_hat.requires_grad = True
             hat_predict = self.discriminator(x_hat, step=step, alpha=alpha)[0]
             grad_x_hat = grad(outputs=hat_predict.sum(), inputs=x_hat, create_graph=True)[0]
-            grad_loss = 10 * ((grad_x_hat.view(grad_x_hat.shape[0], -1).norm(2, dim=1) - 1) ** 2).mean()
+            grad_loss = ((grad_x_hat.view(grad_x_hat.shape[0], -1).norm(2, dim=1) - 1) ** 2).mean()
 
             discriminator_loss = torch.stack([real_predictions_loss, fake_predictions_loss, grad_loss])
+
+            # Logging
+            log = {"grad_prediction_losses": discriminator_loss[-1]}
+            self.logger.log_metrics(log, self.global_step)
+            self.log_dict(log, prog_bar=True)
+
             return discriminator_loss
 
     def training_step(self, batch, batch_idx, optimizer_idx):
@@ -150,12 +170,8 @@ class ProgressiveGAN(LightningModule):
             discriminator_predictions = self.discriminator(fake_images, step=step, alpha=alpha)[0]
             loss = self.__get_losses__(optimizer_idx, discriminator_predictions, real_images, fake_images, step, alpha)
 
-            # Logging
-            log = {"generator_loss": loss}
-            self.logger.log_metrics(log, self.global_step)
-            self.log_dict(log, prog_bar=True)
             if self.global_step % self.display_interval == 0:
-                self.__display_samples__(step, alpha)
+                self.__display_samples__(real_images, step, alpha)
             return loss
 
         if optimizer_idx == 1:
@@ -165,11 +181,6 @@ class ProgressiveGAN(LightningModule):
 
             predictions = [real_predictions, fake_predictions]
             loss = self.__get_losses__(optimizer_idx, predictions, real_images, fake_images, step, alpha)
-
-            # Logging
-            log = {"grad_prediction_losses": loss[-1]}
-            self.logger.log_metrics(log, self.global_step)
-            self.log_dict(log, prog_bar=True)
 
             return loss
 
@@ -187,9 +198,9 @@ class ProgressiveGAN(LightningModule):
         d_optimizer = torch.optim.Adam(self.discriminator.parameters(), lr=0.001, betas=(0.0, 0.99))
         return [g_optimizer, d_optimizer], []
 
-    def __display_samples__(self, step, alpha):
+    def __display_samples__(self, real_images, step, alpha):
         with torch.no_grad():
-            images = self.generator(
+            generated_images = self.generator(
                 self.testing_seed.to(self.device),
                 torch.from_numpy(np.array([0] * self.display_length)).to(self.device),
                 step,
@@ -197,10 +208,16 @@ class ProgressiveGAN(LightningModule):
             )
             self.logger.experiment.add_image(
                 "{}'s artwork of {}".format(self.name, self.art_type),
-                make_grid(images),
+                make_grid(generated_images),
+                self.global_step
+            )
+            self.logger.experiment.add_image(
+                "Sample Real Images".format(self.name, self.art_type),
+                make_grid(real_images),
                 self.global_step
             )
 
     def train_dataloader(self) -> DataLoader:
-        # BATCH SIZE MUST BE 1, NO EXCEPTIONS WITHOUT COMPLETE REDOING OF THE CODE
-        return DataLoader(self.dataset, num_workers=23, batch_size=1)
+        # BATCH SIZE MUST BE 1, NO EXCEPTIONS WITHOUT COMPLETE REDOING OF THE CODE FROM SCRATCH
+        # DON'T YOU FUCKING DARE CHANGE THIS BATCH SIZE UNLESS U WANT TO DESTROY THIS WHOLE CODE BASE
+        return DataLoader(self.dataset, num_workers=cpu_count() - 2, batch_size=1)

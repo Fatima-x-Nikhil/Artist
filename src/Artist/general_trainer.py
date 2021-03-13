@@ -1,13 +1,13 @@
 import torch
 import torchvision.transforms as transforms
 from pytorch_lightning import LightningModule
-from src.models.base import GAN
+from src.Artist.models.base import GAN
 from torch.nn.functional import binary_cross_entropy as bce
 from torch.utils.data.dataloader import DataLoader
 from torchvision.datasets import ImageFolder
 from torchvision.utils import make_grid
 
-from src.dataset import unsplash_downloader
+from src.Artist.dataset import unsplash_downloader
 
 
 class CustomModule(LightningModule):

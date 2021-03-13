@@ -6,7 +6,7 @@ from typing import Union
 import numpy as np
 import torch
 from pytorch_lightning import LightningModule
-from src.models.progressive_gan import Generator, Discriminator
+from src.Artist.models.progressive_gan import Generator, Discriminator
 from torch import Tensor
 from torch.autograd import grad
 from torch.optim import Optimizer
@@ -16,13 +16,13 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchvision.utils import make_grid
 
-from src.dataset import unsplash_downloader
+from src.Artist.dataset import unsplash_downloader
 
 
 class CustomDataset(Dataset):
     def __init__(self, art_type: str = "celeba", n=1000, iterations: List[int] = None, batch_sizes: List[int] = None,
-                 step: int = 0):
-        path = json.load(open("/home/nmelgiri/PycharmProjects/Artist/src/settings.json"))["filepaths"]["image dirpath"]
+                 step: int = 0, json_path: str = ""):
+        path = json.load(open(json_path))["filepaths"]["image dirpath"]
         if iterations is None:
             iterations = [100000] * 6
         if batch_sizes is None:

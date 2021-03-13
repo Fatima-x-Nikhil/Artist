@@ -1,7 +1,7 @@
 import torch
 import torchvision.transforms as transforms
 from pytorch_lightning import LightningModule
-from src.models import *
+from src.models.base import GAN
 from torch.nn.functional import binary_cross_entropy as bce
 from torch.utils.data.dataloader import DataLoader
 from torchvision.datasets import ImageFolder

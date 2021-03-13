@@ -1,7 +1,7 @@
 from pytorch_lightning import LightningModule, Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint
 import json
-from src.models import DCGAN
+from src.models.dcgan import DCGAN
 
 from src.general_trainer import CustomModule
 from src.progressive_trainer import ProgressiveGAN
@@ -13,7 +13,7 @@ def progressive_gan(name: str = "celeba", art_type: str = "celeba", n: int = 100
         name=name,
         art_type=art_type,
         n=n,
-        batch_sizes=[2 ** n for n in range(6, 0, -1)],
+        batch_sizes=[8] * 6,
         display_interval=1000,
     )
     return gan

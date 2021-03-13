@@ -1,5 +1,6 @@
-from torch.nn import Module
 from typing import Tuple
+
+from torch.nn import Module
 
 
 class GAN:

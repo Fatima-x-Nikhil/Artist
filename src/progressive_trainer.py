@@ -1,24 +1,22 @@
-from typing import List
 import json
 import os
+from pathlib import Path
+from typing import List
+from typing import Union
 
-import torch
 import numpy as np
+import torch
 from pytorch_lightning import LightningModule
-from pytorch_lightning import Trainer
 from src.models.progressive_gan import Generator, Discriminator
-from torch.autograd import grad
-from torch.nn.functional import mse_loss as mse
 from torch import Tensor
+from torch.autograd import grad
 from torch.optim import Optimizer
-from torchvision.utils import make_grid
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
-from typing import Optional, Callable, Union
+from torchvision.utils import make_grid
 
-from pathlib import Path
 from src.dataset import UnsplashDownloader
 
 
@@ -60,7 +58,7 @@ class CustomDataset(Dataset):
         dataset = ImageFolder(
             root=self.path,
             transform=transforms.Compose([
-                transforms.Resize(size+int(size*0.1)+1),
+                transforms.Resize(size + int(size * 0.1) + 1),
                 transforms.RandomCrop(size),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor()
@@ -208,7 +206,7 @@ class ProgressiveGAN(LightningModule):
         with torch.no_grad():
             images = self.generator(
                 self.testing_seed.to(self.device),
-                torch.from_numpy(np.array([0]*self.display_length)).to(self.device),
+                torch.from_numpy(np.array([0] * self.display_length)).to(self.device),
                 step,
                 alpha
             )

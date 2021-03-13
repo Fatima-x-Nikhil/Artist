@@ -1,14 +1,11 @@
-from abc import ABC
-
-from pytorch_lightning import LightningDataModule
 import json
-import os
-import json
-from tqdm.auto import tqdm
 import math
+import os
 from pathlib import Path
+
 import requests
 from PIL import Image
+from tqdm.auto import tqdm
 
 
 class UnsplashDownloader:
@@ -46,4 +43,3 @@ class UnsplashDownloader:
             urls = self.urls[query]
             for index, url in enumerate(tqdm(urls, desc="downloading images for {}".format(query))):
                 Image.open(requests.get(url, stream=True).raw).save(os.path.join(dir_path, str(index) + ".jpg"))
-

@@ -1,7 +1,8 @@
+import warnings
+from typing import Tuple
+
 from base import GAN
 from torch import nn
-from typing import Tuple
-import warnings
 
 
 # custom weights initialization called on netG and netD

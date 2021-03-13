@@ -1,18 +1,17 @@
 import json
 import os
+from pathlib import Path
 
 import torch
 import torchvision.transforms as transforms
-from torchvision.utils import make_grid
 from pytorch_lightning import LightningModule
+from src.models import *
 from torch.nn.functional import binary_cross_entropy as bce
 from torch.utils.data.dataloader import DataLoader
 from torchvision.datasets import ImageFolder
+from torchvision.utils import make_grid
 
-from src.models import *
 from src.dataset import UnsplashDownloader
-
-from pathlib import Path
 
 
 class ArtSchool(LightningModule):

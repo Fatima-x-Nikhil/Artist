@@ -1,11 +1,17 @@
-import torch
-
-from torch import nn
-from torch.nn import init
-from torch.nn import functional as F
-from torch.autograd import Variable
-
+"""
+Code mostly from https://github.com/rosinality/progressive-gan-pytorch
+Vast majority of credit goes to github user rosinality for this right here, I don't want to just copy + paste and steal
+Professionals have standards
+I'm going to copy + paste + credit the person I got this from
+¯\_(ツ)_/¯
+"""
 from math import sqrt
+
+import torch
+from torch import nn
+from torch.autograd import Variable
+from torch.nn import functional as F
+from torch.nn import init
 
 
 def init_linear(linear):
@@ -136,7 +142,6 @@ class ConvBlock(nn.Module):
         pad1 = padding
         pad2 = padding
         pad2 = padding2 if padding2 is not None else pad2
-
 
         kernel1 = kernel_size
         kernel2 = kernel_size

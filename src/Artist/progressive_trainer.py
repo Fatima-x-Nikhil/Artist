@@ -51,7 +51,7 @@ class CustomDataset(Dataset):
         self.dataset = iter(dataset)
 
     def __len__(self):
-        return sum(self.iterations)
+        return sum(self.iterations[self.step:])
 
     def __next_step__(self):
         if self.step < len(self.iterations) and not self.first_flag:
@@ -93,7 +93,7 @@ class CustomDataset(Dataset):
 class ProgressiveGAN(LightningModule):
     def __init__(self, art_type: str = "celeba", name: str = "Fatima", json_path: str = "",
                  batch_sizes: List[int] = None, n_label: int = 1, display_interval: int = 100, n: int = 1000,
-                 iterations: List[int] = None, display_length: int = 32, initial_step: int = 0, gpu: bool=False):
+                 iterations: List[int] = None, display_length: int = 32, initial_step: int = 0, gpu: bool = False):
         super().__init__()
         iterations = [100000] * 6 if iterations is None else iterations
         batch_sizes = [8] * 6 if batch_sizes is None else batch_sizes
@@ -119,7 +119,7 @@ class ProgressiveGAN(LightningModule):
         self.one, self.m_one = torch.tensor(1, dtype=torch.float), torch.tensor(-1, dtype=torch.float)
 
     def __get_losses__(self, optimizer_idx: int, predictions: Union[List[torch.Tensor], torch.Tensor],
-                       real_images: torch.Tensor, fake_images: torch.Tensor, step: int, alpha: float):
+                       real_images: torch.Tensor, fake_images: torch.Tensor, step: int, alpha: float) -> torch.Tensor:
         if optimizer_idx == 0:
             discriminator_predictions = predictions
             generator_loss = -discriminator_predictions.mean()
@@ -195,8 +195,8 @@ class ProgressiveGAN(LightningModule):
             loss[2].backward()
 
     def configure_optimizers(self):
-        g_optimizer = torch.optim.Adam(self.generator.parameters(), lr=0.001, betas=(0.0, 0.99))
-        d_optimizer = torch.optim.Adam(self.discriminator.parameters(), lr=0.001, betas=(0.0, 0.99))
+        g_optimizer = torch.optim.Adam(self.generator.parameters(), lr=0.0001, betas=(0.0, 0.99))
+        d_optimizer = torch.optim.Adam(self.discriminator.parameters(), lr=0.0001, betas=(0.0, 0.99))
         return [g_optimizer, d_optimizer], []
 
     def __display_samples__(self, real_images, step, alpha):

@@ -12,13 +12,10 @@ Ensure you have a GPU if you want to train in any reasonable amount of time.
 - [Install cuDNN here][cuDNN Install]
 #### Project Installation
 ```sh
-git clone https://github.com/Fatima-x-Nikhil/Artist.git
-cd Artist
-pip install -r requirements.txt
+pip install Artist-Engineering-Geek
 # Don't forget to install your specific pytorch and torchvision libraries for your gpu
+# in my case, I have the NVIDIA RTX 3090 so this is my version
 pip install --no-cache-dir --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu112/torch_nightly.html
-cd src/models
-pip install -e .
 ```
 
 ## Running the program

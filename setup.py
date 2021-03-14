@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="Artist-Engineering_Geek",
-    version="0.0.13",
+    version="0.1.0",
     author="Nikhil Melgiri",
     author_email="nmelgiri@uwaterloo.ca",
     description="A bunch of GANs and data downloaders to make a custom AI artist",

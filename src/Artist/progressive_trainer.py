@@ -93,7 +93,7 @@ class CustomDataset(Dataset):
 class ProgressiveGAN(LightningModule):
     def __init__(self, art_type: str = "celeba", name: str = "Fatima", json_path: str = "",
                  batch_sizes: List[int] = None, n_label: int = 1, display_interval: int = 100, n: int = 1000,
-                 iterations: List[int] = None, display_length: int = 32, initial_step: int = 0, gpu: bool=False):
+                 iterations: List[int] = None, display_length: int = 32, initial_step: int = 0, gpu: bool = False):
         super().__init__()
         iterations = [100000] * 6 if iterations is None else iterations
         batch_sizes = [8] * 6 if batch_sizes is None else batch_sizes
